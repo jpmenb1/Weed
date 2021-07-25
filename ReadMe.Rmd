@@ -1,0 +1,75 @@
+---
+title: "ReadMe"
+author: Jose Baltazar
+output: html_document
+---
+
+# Dataset and motivation
+
+This report analyses a data set containing data regarding the elemental composition of cannabis leaves 
+grow in 3 different soils of New Zealand. The exploratory analysis aims to answer the following questions:
+
+- Do the data indicate differences in the elemental composition of the cannabis leaves grown in 
+different soil types?
+- Are some of the elements related to one another in terms of their levels in the samples leaves?
+
+# Packages
+
+The packages used to complete this project were the following:
+```{r, echo=FALSE}
+library(NCmisc)
+list.functions.in.file("C:/Users/josep/Documents/GitHub/Weed/Weed.R")
+```
+
+# Conclusion
+
+- The data indicate differences in the elemental compositions of leaves grown in different soil types. By knowing the concentration of a certain element, one could identify in which soil the plant has grown. 
+
+```{r, echo=FALSE}
+#importing sheet1 and cleaning data
+sheet1 <- read_excel("C:/Users/josep/Desktop/Srishdata/PotPlants_18.xlsx", sheet = 'SampleSetOne')
+#changing "Sample.Name" to "Sample Name"
+sheet1 <- (setnames(sheet1, old = c("Sample,Name"), new =c("Sample Name")))
+
+#importing sheet2 and cleaning data
+sheet2 <- read_excel("C:/Users/josep/Desktop/Srishdata/PotPlants_18.xlsx", sheet = 'SampleSetTwo')
+
+#replacing potting mix with pm
+sheet2 <- sheet2 %>% mutate(Group = recode(Group, 'potting mix' = 'pm'))
+#removing NA's
+sheet2<- sheet2%>%na.omit
+#removing mean and variance values at the bottom
+sheet2 <- (sheet2[-c(53,54),])
+#changing "SampleName" to "Sample Name"
+sheet2 <- (setnames(sheet2, old = c("SampleName"), new =c("Sample Name")))
+
+#importing sheet3 and cleaning data
+sheet3 <- read_excel("C:/Users/josep/Desktop/Srishdata/PotPlants_18.xlsx", sheet = 'SampleSetThree')
+#remove "missing" values
+sheet3 <- (sheet3[-c(49),])
+#converting the elements from factor to numbers.
+sheet3 <- mutate_at(sheet3, vars(-Sample.Name, -Group), function(x) as.numeric(as.character(x)))
+#changing "Sample.Name" to "Sample Name"
+sheet3 <- (setnames(sheet3, old = c("Sample.Name"), new =c("Sample Name")))
+
+#combining all the sheets into one data set
+sheet <- rbind(sheet1, sheet2, sheet3)
+
+
+#ANALYSIS
+#question 1
+#Do the data indicate differences in the elemental composition of the cannabis leaves grown in 
+#different soil types?
+  
+
+#Creating a function "test" to filter the data set and show only the elements I want to analize for question 1.
+test <-  sheet [c("Group", "Mg", "Al", "K", "Ca", "Sc")]
+
+#"newData" is a new function arranges the data in "test"
+newData <- test %>% gather(key = Element, value = Measure, Mg, Al, K, Ca, Sc)
+
+ggplot(data = newData) + geom_point(aes(x = Element, y = Measure, colour = Element )) + facet_grid(~ Group)
+ggplot(data = newData) + geom_boxplot(aes(x = Element, y = Measure, colour = Element )) + facet_grid(~ Group)
+```
+
+- 
